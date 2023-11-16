@@ -271,27 +271,27 @@ const productMultipleSearch = async(req,res)=>{
     }
 }
 
-const deleteProduct = async(req,res)=>{
-    try {
-        const userId = req.params.userId
-        const result = await Product.findOneAndUpdate(
-            { _id:userId },
-            { $set: { isDelete: true } },
-            { new: true }
-        )
-        return res.status(200).send({
-            success: true,
-            message: "Product Deleted Successfully",
-            data: result
-        })
-    } catch (error) {
-        return res.status(500).send({
-            success: false,
-            message: "Internal Server Error",
-            error: error
-        })
-    }
-}
+// const deleteProduct = async(req,res)=>{
+//     try {
+//         const userId = req.params.userId
+//         const result = await Product.findOneAndUpdate(
+//             { _id:userId },
+//             { $set: { isDelete: true } },
+//             { new: true }
+//         )
+//         return res.status(200).send({
+//             success: true,
+//             message: "Product Deleted Successfully",
+//             data: result
+//         })
+//     } catch (error) {
+//         return res.status(500).send({
+//             success: false,
+//             message: "Internal Server Error",
+//             error: error
+//         })
+//     }
+// }
 
 
 
@@ -304,5 +304,5 @@ module.exports = {
     changeProductStatus,
     productSearch,
     productMultipleSearch,
-    deleteProduct
+    //deleteProduct
 };
