@@ -2,6 +2,8 @@ const { default: mongoose } = require("mongoose");
 const FavoriteProduct = require("../models/favoriteProduct");
 const Product = require("../models/product");
 const User = require('../models/users');
+const { StatusCodes } = require("http-status-codes");
+const Message = require('../services/message.json')
 
 const addProduct = async(req,res)=>{
     try {
@@ -271,27 +273,27 @@ const productMultipleSearch = async(req,res)=>{
     }
 }
 
-// const deleteProduct = async(req,res)=>{
-//     try {
-//         const userId = req.params.userId
-//         const result = await Product.findOneAndUpdate(
-//             { _id:userId },
-//             { $set: { isDelete: true } },
-//             { new: true }
-//         )
-//         return res.status(200).send({
-//             success: true,
-//             message: "Product Deleted Successfully",
-//             data: result
-//         })
-//     } catch (error) {
-//         return res.status(500).send({
-//             success: false,
-//             message: "Internal Server Error",
-//             error: error
-//         })
-//     }
-// }
+const deleteProduct = async(req,res)=>{
+    try {
+        const userId = req.params.userId
+        const result = await Product.findOneAndUpdate(
+            { _id:userId },
+            { $set: { isDelete: true } },
+            { new: true }
+        )
+        return res.status(200).send({
+            success: StatusCodes.OK,
+            message: Message.ProductDelete,
+            data: result
+        })
+    } catch (error) {
+        return res.status(500).send({
+            success: StatusCodes.INTERNAL_SERVER_ERROR,
+            message: "Internal Server Error",
+            error: error
+        })
+    }
+}
 
 
 
@@ -304,5 +306,5 @@ module.exports = {
     changeProductStatus,
     productSearch,
     productMultipleSearch,
-    //deleteProduct
+    deleteProduct
 };

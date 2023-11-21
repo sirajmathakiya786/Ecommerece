@@ -20,9 +20,6 @@ const addUser = async (req, res) => {
       phoneNumber,
       referalCode,
       refer,
-      // referedBy,
-      // rewards,
-      // profileImage,
       role
     } = req.body;
     let passwordHash = await passwordEncypt(password);
