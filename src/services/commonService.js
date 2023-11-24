@@ -37,4 +37,16 @@ const otpExpireTime = ()=>{
     return expiryIST;
 }
 
-module.exports = { passwordEncypt,validatePassword,generateReferralCode,otpExpireTime,generateOTP }
+const calculateTotalPrice = async (products) => {
+    let totalPrice = 0;
+
+    for (const product of products) {
+        // Multiply product price by quantity
+        totalPrice += product.price;
+    }
+
+    return totalPrice;
+};
+
+
+module.exports = { passwordEncypt,validatePassword,generateReferralCode,otpExpireTime,generateOTP,calculateTotalPrice }

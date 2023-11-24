@@ -12,5 +12,6 @@ router.post('/forgot-password', user.forgotPassword);
 router.post('/verify-otp', user.verifyOtp);
 router.patch('/change-password/:userId', user.changePassword);
 router.put('/reset-password/:userId', user.resetPassword);
+router.get('/render-login', user.renderLogin);
 
 module.exports = router;

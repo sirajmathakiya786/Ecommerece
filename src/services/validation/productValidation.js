@@ -9,6 +9,7 @@ const userProductSchema = Joi.object({
     date: Joi.date(),
     reviews: Joi.number(),
     price: Joi.number(), 
+    stock: Joi.number()
 });
 
 module.exports = {

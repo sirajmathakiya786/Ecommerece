@@ -7,7 +7,7 @@ const Message = require('../services/message.json')
 
 const addProduct = async(req,res)=>{
     try {
-        const { productName,description,date,reviews,price } = req.body;
+        const { productName,description,date,reviews,price,stock } = req.body;
         const isExistsProductName = await Product.findOne({productName});
         if(isExistsProductName){
             return res.status(400).json({ success: false, message: "ProductName Alredy Exists"});
@@ -17,7 +17,8 @@ const addProduct = async(req,res)=>{
             description,
             date,
             reviews,
-            price
+            price,
+            stock
         });
         productData.save().then((result)=>{
             return res.status(201).send({

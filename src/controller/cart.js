@@ -7,32 +7,49 @@ const { StatusCodes } = require('http-status-codes');
 const addToCart = async(req,res)=>{
     try {
         const userId = req.user._id;
-        const { productId, quantity, price, type } = req.body;
+        const { productId, quantity, type } = req.body;
+
+        const product = await Product.findById(productId);
+        if(!product){
+            return res.status(400).send({
+                success: false,
+                message: "Product Not Found"
+            })
+        }
+        // if(quantity > product.stock ){
+        //     return res.status(400).send({
+        //         success: false,
+        //         message: "Stock not availabel in this product"
+        //     })
+        // }
+        const price = product.price
         
         let cart = await Cart.findOne({ userId });
 
         if (cart) {
             let existingProductIndex  = cart.products.findIndex(p => p.productId == productId);
-            console.log(existingProductIndex);
             if (existingProductIndex  > -1) {
                 if(type === "+"){
                     cart.products[existingProductIndex ].quantity += quantity;
-                    cart.products[existingProductIndex ].price += price;
+                    cart.products[existingProductIndex ].price += product.price * quantity;
                     cart.totalAmount += price * quantity;
                 }else if(type === "-"){
                     cart.products[existingProductIndex].quantity -= quantity;
-                    cart.products[existingProductIndex].price -= price;
+                    cart.products[existingProductIndex].price -= product.price * quantity;
                     cart.totalAmount -= price * quantity;      
                 }
                 else{
                     cart.products[existingProductIndex ].quantity += quantity;
-                    cart.products[existingProductIndex ].price += price;
+                    cart.products[existingProductIndex ].price += product.price * quantity;
                     cart.totalAmount += price * quantity;
                 }
             } else {
-                cart.products.push({ productId, quantity,  price });
+                cart.products.push({ productId, quantity,  price:price * quantity });
                 cart.totalAmount += price * quantity;
             }
+            // product.stock -= quantity;
+            // await product.save();
+
             cart = await cart.save();
             return res.status(201).send({ 
                 success: true, 
@@ -42,9 +59,11 @@ const addToCart = async(req,res)=>{
         } else {
             const newCart = await Cart.create({
                 userId,
-                products: [{ productId, quantity,  price }],
+                products: [{ productId, quantity, price: price * quantity }],
                 totalAmount: price * quantity
             });
+            // product.stock -= quantity;
+            // await product.save();
             return res.status(201).send({ 
                 success: true, 
                 message: "Cart Added Successfully", 

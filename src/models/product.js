@@ -22,6 +22,10 @@ const productSchema = mongoose.Schema(
             type: String,
             required: false
         },
+        stock:{
+            type: Number,
+            required: false
+        },
         status:{
             type: String,
             enum: ['Pending', 'Reject', 'Approved'],

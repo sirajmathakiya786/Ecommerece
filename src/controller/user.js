@@ -97,7 +97,7 @@ const loginUser = async(req,res)=>{
       return res.status(401).json({ success: false, message: "Invalid Password"})
     }
     const token = jwt.sign({ _id:user._id, firstName:user.firstName}, process.env.JWT_SECRET_KEY,{
-      expiresIn: '1h'
+      expiresIn: '11h'
     });
     return res.status(200).send({ 
       success: true, 
@@ -355,6 +355,18 @@ const resetPassword = async (req, res) => {
   }
 };
 
+
+async function renderLogin (req,res){
+
+  try {
+      res.render('login');
+
+  } catch (error) {
+      console.log(error.message);
+  }
+
+}
+
 module.exports = {
   addUser,
   forgotPassword,
@@ -362,5 +374,6 @@ module.exports = {
   changePassword,
   resetPassword,
   updateUser,
-  loginUser
+  loginUser,
+  renderLogin
 };
