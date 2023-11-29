@@ -13,5 +13,6 @@ router.post('/verify-otp', user.verifyOtp);
 router.patch('/change-password/:userId', user.changePassword);
 router.put('/reset-password/:userId', user.resetPassword);
 router.get('/render-login', user.renderLogin);
+router.get('/get-user', user.getAllUser);
 
 module.exports = router;

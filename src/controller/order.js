@@ -68,13 +68,16 @@ const razorpay = require('../services/razorPayInstance');
 // }
 
 const rednerProductPage = async(req,res)=>{
-    res.render('index.hbs');
+    const orders = await Order.find()
+    // console.log(orders);
+    res.render('index.hbs', {orders:orders});
 }
 
 const createOrder = async(req,res)=>{
     try {
         const userId = req.user._id;
-        const { cartId } = req.body;
+        const cartId = req.body.cartId
+        //const { cartId } = req.body;
         
         const cart = await Cart.findOne({ 
             _id: cartId,
@@ -121,8 +124,30 @@ const createOrder = async(req,res)=>{
             totalAmount: cart.totalAmount,
             currency: "INR",
             receipt: options.receipt,
+            // key_id:RAZORPAY_ID_KEY,
+            product_name:req.body.name,
+            description:req.body.description,
+            contact:"8567345632",
+            name: "Siraj",
+            email: "sirajmathakiya.vhits@gmail.com"
         };
-        const order = await razorpay.orders.create(options);
+        const order =  razorpay.orders.create(options,(err,order)=>{
+            if(!err){
+                res.status(200).send({
+                    success:true,
+                    msg:'Order Created',
+                    order_id:order.id,
+                    amount:amount,
+                    key_id:RAZORPAY_ID_KEY,
+                    contact:"8238830466",
+                    name: "Siraj",
+                    email: "sirajmathakiya.vhits@gmail.com"
+                });
+            }
+            else{
+                res.status(400).send({success:false,msg:'Something went wrong!'});
+            }
+        });
         const newOrder = new Order(orderData);
         await newOrder.save();
         await Cart.findByIdAndDelete(cartId);
@@ -136,7 +161,7 @@ const createOrder = async(req,res)=>{
             }
         });
     } catch (error) {
-        // console.log(error);
+        console.log(error);
         return res.status(500).send({
             success: false,
             message: "Internal Server Error",

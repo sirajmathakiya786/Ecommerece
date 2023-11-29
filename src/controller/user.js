@@ -355,6 +355,20 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const getAllUser = async(req,res)=>{
+  try {
+    User.find({}).select('firstName lastName email rewards').then((result)=>{
+      return res.status(200).json(result)
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error,
+    });
+  }
+}
+
 
 async function renderLogin (req,res){
 
@@ -375,5 +389,6 @@ module.exports = {
   resetPassword,
   updateUser,
   loginUser,
-  renderLogin
+  renderLogin,
+  getAllUser
 };
