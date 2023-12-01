@@ -1,13 +1,18 @@
-const { default: mongoose } = require("mongoose");
+const { default: mongoose, mongo } = require("mongoose");
 const FavoriteProduct = require("../models/favoriteProduct");
 const Product = require("../models/product");
 const User = require('../models/users');
 const { StatusCodes } = require("http-status-codes");
 const Message = require('../services/message.json')
+const { EventEmitter } = require('events');
+const apiEventEmitter = new EventEmitter();
+
 
 const addProduct = async(req,res)=>{
     try {
         const { productName,description,date,reviews,price,stock } = req.body;
+        const images = req.files.map(file=> file.originalname)
+        console.log(images);
         const isExistsProductName = await Product.findOne({productName});
         if(isExistsProductName){
             return res.status(400).json({ success: false, message: "ProductName Alredy Exists"});
@@ -18,7 +23,8 @@ const addProduct = async(req,res)=>{
             date,
             reviews,
             price,
-            stock
+            stock,
+            imageGallery: images,
         });
         productData.save().then((result)=>{
             return res.status(201).send({
@@ -98,6 +104,7 @@ const myLikeProduct = async (req, res) => {
 
 const allProduct = async(req,res)=>{
     try {
+        //apiEventEmitter.emit('apiCalled','allProduct')
         const userId = req.user._id
         const getAllProduct = await Product.find({ 
             isDelete:false
@@ -112,6 +119,7 @@ const allProduct = async(req,res)=>{
             return productWithLikeStatus;
         });
        const productsWithLikeStatus  = await Promise.all(promises);
+       
        return res.status(200).send({
             success: true,
             message: "Success",
@@ -296,6 +304,96 @@ const deleteProduct = async(req,res)=>{
     }
 }
 
+const getLikeProduct = async(req,res)=>{
+    try {
+        const userId = req.user._id
+        
+        const productData = await FavoriteProduct.aggregate([
+            {
+                $match:{
+                    userId: new mongoose.Types.ObjectId(userId)
+                }
+            },
+            {
+                $lookup:{
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userDetails"
+                }
+            },
+            {
+                $lookup:{
+                    from: "products",
+                    localField: "productId",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
+            {
+                $unwind: "$userDetails"
+            },
+            
+            {
+                $project:{
+                    _id: 1,
+                    isLike: 1,
+                    firstName: "$userDetails.firstName",
+                    lastName: "$userDetails.lastName",
+                    email: "$userDetails.email",
+                    phoneNumber: "$userDetails.phoneNumber",
+                    isActive: "$userDetails.isActive",
+                    productName: "$productDetails.productName",
+                    description: "$productDetails.description",
+                    
+                }
+            },
+            {
+                $group: {
+                    _id: "$_id",
+                    isLike: { $first: "$isLike" },
+                    firstName: { $first: "$firstName" },
+                    lastName: { $first: "$lastName" },
+                    email: { $first: "$email" },
+                    phoneNumber: { $first: "$phoneNumber" },
+                    isActive: { $first: "$isActive" },
+                    products: { $push: "$productName" },
+                    description: { $push: "$description" },
+                }
+            }
+            
+        ])  
+        return res.send(productData)
+        // console.log();
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            success: StatusCodes.INTERNAL_SERVER_ERROR,
+            message: "Internal Server Error",
+            error: error
+        })
+    }
+}
+
+
+const getProduct = async(req,res)=>{
+    try {
+        const findData = await Product.find();
+        res.send(findData)
+    } catch (error) {
+        return res.status(500).send({
+            success: StatusCodes.INTERNAL_SERVER_ERROR,
+            message: "Internal Server Error",
+            error: error
+        })
+    }
+}
+// let count = 0;
+// apiEventEmitter.on('apiCalled', (apiName)=>{
+//     count++;
+//     console.log(`API "${apiName}" is called `,count);
+// });
+
 
 
 module.exports = { 
@@ -307,5 +405,7 @@ module.exports = {
     changeProductStatus,
     productSearch,
     productMultipleSearch,
-    deleteProduct
+    deleteProduct,
+    getLikeProduct,
+    getProduct
 };

@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Address = require("../models/address");
 const Cart = require("../models/cart");
 const Product = require("../models/product");
@@ -146,8 +147,70 @@ const addToAddress = (req,res)=>{
 }
 
 
+const getAddress = async(req,res)=>{
+    try {
+        const userId = req.user._id
+        const userData = await Address.aggregate([
+            {
+                $match:{
+                    userId: new mongoose.Types.ObjectId(userId),
+                }
+            },
+            {
+                $lookup:{
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "addressDetails"
+                }
+            },
+            {
+                $unwind: '$addressDetails'  
+            },
+            {
+                $project:{
+                    address: 1,
+                    userId: 1,
+                    _id: '$addressDetails._id',
+                    firstName: '$addressDetails.firstName',
+                    lastName: '$addressDetails.lastName',
+                    email: '$addressDetails.email',
+                    phoneNumber: '$addressDetails.phoneNumber',
+                    isActive: '$addressDetails.isActive'
+                }
+            },
+            {
+                $group:{
+                    _id: "$userId",
+                    address: { $push: "$address" },
+                    userDetails:{
+                        $first:{
+                            _id: "$user_id",
+                            firstName: "$firstName",
+                            lastName: "$lastName",
+                            email: "$email",
+                            phoneNumber: "$phoneNumber",
+                            isActive: "$isActive",
+                        }
+                    }
+                }
+            }
+        ])
+        return res.send(userData)
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            success: false,
+            message: "Internal Server Error",
+            error: error
+        })
+    }
+}
+
+
 module.exports = {
     addToCart,
     addToAddress,
-    getCart
+    getCart,
+    getAddress
 }

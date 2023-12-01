@@ -26,6 +26,10 @@ const productSchema = mongoose.Schema(
             type: Number,
             required: false
         },
+        imageGallery:{
+            type: [String],
+            required: false
+        },
         status:{
             type: String,
             enum: ['Pending', 'Reject', 'Approved'],

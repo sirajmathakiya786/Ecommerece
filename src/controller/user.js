@@ -252,7 +252,7 @@ const verifyOtp = async (req, res) => {
 const changePassword = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const { oldPassword, newPassword, confirmPassword } = req.body;
+    const { oldPassword, newPassword } = req.body;
     const user = await User.findOne({ _id: userId });
     const checkOldPassword = await bcrypt.compare(oldPassword, user.password);
     if (!checkOldPassword) {
