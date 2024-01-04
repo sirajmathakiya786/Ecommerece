@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<title>Razorpay Web-Integration</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+</head>
+
+<body>
+	<hr/>
+	
+		<div style="display:inline-block">
+			{{#each orders}}
+        		{{#each this.products}}
+					<p>Product ID: {{this.productId}}</p>
+					<p><b>Amount: {{../totalAmount}}</b></p>
+					<form class="pay-form" >
+						<input type="hidden" name="name" value="Shirt">
+						<input type="hidden" name="amount" value="500">
+						<input type="text" name="cartId" value="6560a81e470e357f2021f9a9">
+						<button type="submit" name="PayNow">PayNow</button>
+					</form>
+				{{/each}}
+			{{/each}}
+		</div>
+</body>
+
+</html>
+
+<!--Inside index.html -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var accessToken = localStorage.getItem('token');
+console.log(accessToken)
+$(document).ready(function(){
+	$('.pay-form').submit(function(e){
+		e.preventDefault();
+
+		var formData = $(this).serialize();
+  
+		$.ajax({
+			url:"/order/create",
+			type:"POST",
+			data: formData,
+			headers:{
+				'token':accessToken
+			},
+			success:function(res){
+				if(res.success){
+					var options = {
+						"key": ""+res.key_id+"",
+						"amount": ""+res.amount+"",
+						"currency": "INR",
+						"name": ""+res.product_name+"",
+						"description": ""+res.description+"",
+						"image": "https://dummyimage.com/600x400/000/fff",
+						"order_id": ""+res.order_id+"",
+						"handler": function (response){
+							alert("Payment Succeeded");
+							// window.open("/","_self")
+						},
+						
+						"notes" : {
+							"description":""+res.description+""
+						},
+						"theme": {
+							"color": "#2300a3"
+						}
+					};
+					var razorpayObject = new Razorpay(options);
+					razorpayObject.on('payment.failed', function (response){
+							alert("Payment Failed");
+					});
+					razorpayObject.open();
+				}
+				else{
+					alert(res.msg);
+				}
+			}
+		})
+
+	});
+});
+</script>
